@@ -69,6 +69,7 @@ body { margin: 0; background: var(--c1); color: var(--c9);
   font-size: 11px; color: #888; cursor: pointer; display: flex; align-items: center; gap: 4px;
   transition: background 100ms, color 100ms }
 .seg button.active { background: #fff; color: var(--c9); box-shadow: var(--shadow-sm) }
+.heading-tools { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end }
 .preview { display: flex; justify-content: center }
 
 /* ── Stage scaler ── */
@@ -142,14 +143,19 @@ body { margin: 0; background: var(--c1); color: var(--c9);
 
 /* ═══════════════════════════════════════════
    DESKTOP WINDOW (.win)
+   layout: rail | main( titlebar? / body( clist | pane ) )
 ═══════════════════════════════════════════ */
 .win { display: flex; width: 960px; height: 600px; border-radius: 10px; overflow: hidden;
-  font-size: 14px; box-shadow: 0 10px 40px #00000040, 0 0 0 1px #00000050; position: relative }
+  font-size: 14px; position: relative;
+  box-shadow: 0 10px 40px #00000040, 0 0 0 1px #00000050 }
+.win .main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--rail) }
+.win .body { display: flex; flex: 1; min-height: 0 }
 
+/* colours approximated from WeChat for Windows 4.x dark mode */
 .win.t-wechat {
-  --rail: #2e2e2e; --list: #3a3a3a; --sel: #0aa968; --chover: #444;
-  --pane: #232323; --text: #e6e6e6; --sub: #999; --bline: #333;
-  --srch: #2e2e2e; --send-bg: #2f2f2f; --send-fg: #07c160; --badge: #fa5151;
+  --rail: #262626; --list: #2e2e2e; --sel: #454545; --chover: #383838;
+  --pane: #1f1f1f; --text: #e6e6e6; --sub: #8a8a8a; --bline: #2e2e2e;
+  --srch: #3a3a3a; --badge: #fa5151;
 }
 .win.t-qq {
   --rail: #1b1b1b; --list: #262626; --sel: #474747; --chover: #303030;
@@ -160,11 +166,17 @@ body { margin: 0; background: var(--c1); color: var(--c9);
 .win .av { width: 40px; height: 40px }
 .win.t-wechat .av { border-radius: 6px }
 .win.t-qq .av { border-radius: 50% }
-.win .av.rail-me { width: 34px; height: 34px; border-radius: 8px }
+.win .av.rail-me { width: 34px; height: 34px; border-radius: 6px }
+
+/* WeChat title bar: its own row, so window buttons never collide with the chat header */
+.titlebar { height: 32px; flex: none; display: flex; align-items: center; justify-content: flex-end;
+  gap: 22px; padding: 0 16px; color: #8a8a8a }
+.titlebar svg { cursor: pointer }
 
 /* rail */
 .win .rail { width: 62px; background: var(--rail); display: flex; flex-direction: column;
-  align-items: center; padding: 14px 0 12px; flex: none; gap: 0 }
+  align-items: center; padding: 14px 0 12px; flex: none }
+.win.t-wechat .rail { padding-top: 40px }
 .win.t-qq .rail { width: 56px }
 .rail-top-qq { height: 26px }
 .rail-icons { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; flex: 1 }
@@ -181,8 +193,10 @@ body { margin: 0; background: var(--c1); color: var(--c9);
 
 /* conversation list */
 .clist { width: 250px; background: var(--list); display: flex; flex-direction: column; flex: none }
+.win.t-wechat .clist { width: 240px; border-top-left-radius: 8px }
 .win.t-qq .clist { width: 230px }
-.search-row { display: flex; gap: 10px; padding: 14px 12px 10px; align-items: center }
+.search-row, .list-head { display: flex; gap: 8px; padding: 14px 12px 10px; align-items: center; flex: none }
+.win.t-wechat .list-head { height: 58px; padding: 0 12px }
 .search { flex: 1; height: 30px; border-radius: 6px; background: var(--srch); color: var(--sub);
   display: flex; align-items: center; gap: 6px; padding: 0 10px; font-size: 13px }
 .plus { width: 30px; height: 30px; border-radius: 6px; background: var(--srch); color: var(--sub);
@@ -200,7 +214,7 @@ body { margin: 0; background: var(--c1); color: var(--c9);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
 .ctop span { font-size: 11px; color: var(--sub); flex: none }
 .cbot { display: flex; align-items: center; justify-content: space-between;
-  margin-top: 4px; gap: 6px }
+  margin-top: 4px; gap: 6px; color: var(--sub) }
 .cbot small { font-size: 12px; color: var(--sub); white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0 }
 .cnt { background: #555; color: #eee; font: 600 11px/16px inherit; min-width: 18px;
@@ -210,23 +224,28 @@ body { margin: 0; background: var(--c1); color: var(--c9);
 /* chat pane */
 .pane { flex: 1; display: flex; flex-direction: column; min-width: 0;
   border-left: 1px solid var(--bline); background: var(--pane) }
+.win.t-wechat .pane { border-left: 0 }
 .pane-head { height: 56px; display: flex; align-items: center; justify-content: space-between;
   padding: 0 20px; flex: none; color: var(--text) }
-.win.t-wechat .pane-head { height: 70px; border-bottom: 1px solid var(--bline); position: relative }
+.win.t-wechat .pane-head { height: 58px; border-bottom: 1px solid var(--bline) }
 .pane-head strong { font-size: 16px; font-weight: 500 }
-.pane-actions { display: flex; gap: 18px; color: #b5b5b5 }
-.winctl { position: absolute; top: 10px; right: 14px; display: flex; gap: 18px; color: #888 }
-.win.t-qq .winctl { display: none }
+.pane-actions { display: flex; gap: 18px; align-items: center; color: #b5b5b5 }
+.act-dd { display: inline-flex; align-items: center; gap: 2px; cursor: pointer }
 
 /* messages */
 .win .msgs { padding: 16px 22px 8px; gap: 10px; color: var(--text) }
 .win .row { gap: 12px }
+.win.t-wechat .row { align-items: flex-start }
 .win .bubble { padding: 10px 14px; border-radius: 8px; line-height: 1.5;
-  font-size: 15px; white-space: pre-wrap; word-break: break-word }
-.win.t-wechat .row:not(.me) .bubble { background: #2d2d2d; color: #e8e8e8;
-  border-radius: 4px 12px 12px 12px }
-.win.t-wechat .row.me .bubble { background: #2a6b41; color: #e8e8e8;
-  border-radius: 12px 4px 12px 12px }
+  font-size: 15px; white-space: pre-wrap; word-break: break-word; position: relative }
+.win.t-wechat .bubble { padding: 9px 13px; border-radius: 4px; font-size: 14px }
+.win.t-wechat .row:not(.me) .bubble { background: #2c2c2c; color: #dcdcdc }
+.win.t-wechat .row.me .bubble { background: #3eb575; color: #111 }
+/* WeChat bubble tails */
+.win.t-wechat .bubble::before { content: ""; position: absolute; top: 13px;
+  border: 5px solid transparent }
+.win.t-wechat .row:not(.me) .bubble::before { left: -9px; border-right-color: #2c2c2c }
+.win.t-wechat .row.me .bubble::before { right: -9px; border-left-color: #3eb575 }
 .win.t-qq .row:not(.me) .bubble { background: #2d2d2d; color: #e8e8e8;
   border-radius: 4px 12px 12px 12px }
 .win.t-qq .row.me .bubble { background: #1455b3; color: #fff;
@@ -247,7 +266,14 @@ body { margin: 0; background: var(--c1); color: var(--c9);
 .win .send { position: absolute; right: 20px; bottom: 14px; border: 0; cursor: pointer;
   background: var(--send-bg); color: var(--send-fg); border-radius: 6px;
   font: 15px inherit; padding: 0 26px; height: 36px; display: flex; align-items: center; gap: 10px }
-.win.t-wechat .send { height: 32px; font-size: 14px; padding: 0 22px }
+
+/* WeChat 4.x: rounded input card, textarea on top, toolbar + send at the bottom */
+.inputbox.wx { height: 130px; margin: 0 14px 14px; padding: 6px 12px 10px;
+  border: 1px solid #333; border-radius: 8px }
+.inputbox.wx .toolbar { gap: 16px; color: #a8a8a8 }
+.inputbox.wx .send { position: static; height: 30px; padding: 0 20px; font-size: 13px;
+  border-radius: 4px; background: #2c2c2c; color: #6e6e6e }
+.inputbox.wx .send.ready { background: #07c160; color: #fff }
 .win.t-qq .send { padding: 0 14px 0 26px; height: 40px; border-radius: 8px }
 .win .send i { width: 1px; height: 18px; background: #ffffff40; display: block }
 
@@ -433,3 +459,42 @@ body { margin: 0; background: var(--c1); color: var(--c9);
   .topbar { padding: 0 18px }
   .brand em { display: none }
 }
+
+/* ── Message edit actions (hover) ── */
+.msg-row-wrap { position: relative }
+.msg-actions { position: absolute; top: 50%; transform: translateY(-50%); display: none;
+  gap: 4px; z-index: 5 }
+.row:not(.me) > .msg-actions { right: 0 }
+.row.me > .msg-actions { left: 0 }
+.divider > .msg-actions { right: 0 }
+.sys > .msg-actions { right: -60px }
+.msg-row-wrap:hover > .msg-actions { display: flex }
+.msg-actions button { width: 24px; height: 24px; border: 0; border-radius: 6px; cursor: pointer;
+  display: grid; place-items: center; background: #ffffffe6; color: #444;
+  box-shadow: 0 1px 4px #0003 }
+.msg-actions button:hover { background: #fff; color: #07c160 }
+.msg-actions button.on { background: #07c160; color: #fff }
+.ins-mark { display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-size: 11px; color: #07c160; border-top: 1px dashed #07c160; padding-top: 4px; margin: 2px 0 }
+.ins-mark button { border: 0; background: none; color: inherit; cursor: pointer;
+  font-size: 11px; text-decoration: underline }
+
+/* ── Edit message modal ── */
+.msg-edit-modal { width: 380px; align-items: stretch }
+.msg-edit-ta { width: 100%; border: 1px solid #ddd; border-radius: 6px; padding: 8px 10px;
+  font: 14px/1.5 inherit; resize: vertical; outline: none }
+.msg-edit-ta:focus { border-color: var(--acc) }
+
+/* ── Export modes ── */
+.export-shot .msgs { overflow: hidden }
+.win.export-long { height: auto; min-height: 600px }
+.mob.export-long { height: auto; min-height: 780px }
+.export-long .msgs, .export-long .mlist { overflow: visible; flex: none }
+/* list column shouldn't make the long image taller; stretch to the pane instead */
+.win.export-long .clist { contain: size }
+.actions button:disabled { opacity: .6; cursor: default }
+.save-status { font-size: 12px; color: #888; align-self: center; white-space: nowrap; }
+
+/* ── Unread ── */
+.win .avwrap .dot { top: -3px; right: -3px; width: 9px; height: 9px; border: 0; background: #fa5151 }
+.hint { font-size: 11px; color: var(--c5); line-height: 1.6; margin: 8px 0 0 }
