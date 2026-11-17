@@ -64,7 +64,7 @@ command -v systemctl >/dev/null 2>&1 || fail "systemd is required to keep the pr
 log "Deploying files and configuring systemd on ${HOST}:${PORT}"
 "${SUDO[@]}" install -d -m 0755 "${DEPLOY_DIR}"
 "${SUDO[@]}" find "${DEPLOY_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
-"${SUDO[@]}" cp -a dist/. "${DEPLOY_DIR}/"
+"${SUDO[@]}" cp -a dist "${DEPLOY_DIR}/dist"
 "${SUDO[@]}" cp -a package.json package-lock.json vite.config.js node_modules "${DEPLOY_DIR}/"
 
 TMP_SERVICE="$(mktemp)"
