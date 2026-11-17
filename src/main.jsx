@@ -475,9 +475,6 @@ function Mobile({ theme, chats, setActive, chat, isGroup, groupMembers, senderNa
           <div className="mhead chat-head">
             <button onClick={() => setPage('list')} className="back"><ChevronLeft size={26} />{total > 0 && <em>{total}</em>}</button>
             <b>
-              <button className="mobile-avatar-button chat-avatar-button" title="修改会话头像" onClick={() => pickImage('avatar-contact')}>
-                <Avatar text={chat.avatar} img={chat.avatarImg} />
-              </button>
               <span>{chat.name}{isGroup ? `(${chat.members || groupMembers.length || 1})` : ''}</span>{qq && <Ear size={16} className="ear" />}
             </b>
             <span className="r">{qq ? <Menu size={24} /> : <MoreHorizontal size={24} />}</span>
@@ -485,7 +482,7 @@ function Mobile({ theme, chats, setActive, chat, isGroup, groupMembers, senderNa
           <Messages chat={chat} isGroup={isGroup} showTime={showTime} mobile onEdit={onEdit} onInsertAfter={onInsertAfter} />
           {qq ? (
             <div className="qq-bottom">
-              {isGroup && <div className="mobile-member-picker">
+              {isGroup && <div className="mobile-member-picker no-export">
                 {groupMembers.map(name => <span className="mobile-member-item" key={name}>
                   <button className="mobile-member-avatar" title="修改成员头像" onClick={() => pickMemberAvatar(name)}><Avatar text={getMemberProfile(chat, name).avatar} img={getMemberProfile(chat, name).avatarImg} /></button>
                   <button className={senderName === name ? 'active' : ''} onClick={() => { setSenderName(name); setAsOther(true); }}>{name}</button>
@@ -504,7 +501,7 @@ function Mobile({ theme, chats, setActive, chat, isGroup, groupMembers, senderNa
             </div>
           ) : (
             <div className="wx-bottom">
-              {isGroup && <div className="mobile-member-picker">
+              {isGroup && <div className="mobile-member-picker no-export">
                 {groupMembers.map(name => <span className="mobile-member-item" key={name}>
                   <button className="mobile-member-avatar" title="修改成员头像" onClick={() => pickMemberAvatar(name)}><Avatar text={getMemberProfile(chat, name).avatar} img={getMemberProfile(chat, name).avatarImg} /></button>
                   <button className={senderName === name ? 'active' : ''} onClick={() => { setSenderName(name); setAsOther(true); }}>{name}</button>

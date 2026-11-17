@@ -484,7 +484,8 @@ body { margin: 0; background: var(--c1); color: var(--c9);
   .sidebar { display: none }
   .workspace { display: block }
   .editor { padding: 14px 8px }
-  .topbar { padding: 0 18px }
+  .topbar { min-height: 64px; height: auto; padding: 0 18px }
+  .topbar .actions { display: none }
   .brand em { display: none }
 }
 
@@ -518,6 +519,7 @@ body { margin: 0; background: var(--c1); color: var(--c9);
 .win.export-long { height: auto; min-height: 600px }
 .mob.export-long { height: auto; min-height: 780px }
 .export-long .msgs, .export-long .mlist { overflow: visible; flex: none }
+.mob.export-long .msgs { flex: 1 1 auto; min-height: 0; overflow: visible }
 /* list column shouldn't make the long image taller; stretch to the pane instead */
 .win.export-long .clist { contain: size }
 .actions button:disabled { opacity: .6; cursor: default }
