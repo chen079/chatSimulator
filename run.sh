@@ -65,7 +65,7 @@ log "Deploying files and configuring systemd on ${HOST}:${PORT}"
 "${SUDO[@]}" install -d -m 0755 "${DEPLOY_DIR}"
 "${SUDO[@]}" find "${DEPLOY_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
 "${SUDO[@]}" cp -a dist/. "${DEPLOY_DIR}/"
-"${SUDO[@]}" cp -a package.json package-lock.json node_modules "${DEPLOY_DIR}/"
+"${SUDO[@]}" cp -a package.json package-lock.json vite.config.js node_modules "${DEPLOY_DIR}/"
 
 TMP_SERVICE="$(mktemp)"
 trap 'rm -f "${TMP_SERVICE:-}"' EXIT
