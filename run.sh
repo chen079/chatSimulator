@@ -89,7 +89,8 @@ WantedBy=multi-user.target
 EOF
 "${SUDO[@]}" install -D -m 0644 "${TMP_SERVICE}" "/etc/systemd/system/${SERVICE_NAME}"
 "${SUDO[@]}" systemctl daemon-reload
-"${SUDO[@]}" systemctl enable --now "${SERVICE_NAME}"
+"${SUDO[@]}" systemctl enable "${SERVICE_NAME}" >/dev/null
+"${SUDO[@]}" systemctl restart "${SERVICE_NAME}"
 "${SUDO[@]}" systemctl is-active --quiet "${SERVICE_NAME}" || {
   "${SUDO[@]}" systemctl --no-pager --full status "${SERVICE_NAME}" || true
   fail "The ${SERVICE_NAME} service did not start."
