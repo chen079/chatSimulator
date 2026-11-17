@@ -58,6 +58,17 @@ const seed = [
     messages: [{ text: '你看看', time: '10:02' }] },
 ];
 
+const DEFAULT_GROUP_MEMBERS = ['阿杰', '小美', '小林', '老王', '小陈', '小周'];
+function getGroupMembers(chat) {
+  if (Array.isArray(chat.memberNames) && chat.memberNames.length) return chat.memberNames;
+  const fromMessages = chat.messages?.map(m => m.sender).filter(Boolean) || [];
+  return [...new Set([...fromMessages, ...DEFAULT_GROUP_MEMBERS])].slice(0, Math.max(chat.members || 0, 2));
+}
+function getMemberProfile(chat, name) {
+  const profile = chat.memberProfiles?.[name] || {};
+  return { name, avatar: profile.avatar || name?.slice(0, 1) || chat.avatar, avatarImg: profile.avatarImg || null };
+}
+
 /* Unread = messages from the other side after my last reply (system lines and time dividers don't count) */
 function countUnread(c) {
   let n = 0;
@@ -249,10 +260,11 @@ function Bubble({ m, idx, chat, isGroup, showTime, mobile, onEdit, onInsertAfter
     m.type === 'redpacket' ? <div className="redpacket"><b>🧧 {m.text}</b><span>红包</span></div> :
     m.type === 'image' ? (m.src ? <img className="imgmsg" src={m.src} alt="" draggable={false} /> : <div className="imgph"><ImageIcon size={36} /></div>) :
     <div className="bubble">{m.text}</div>;
+  const member = !m.me && isGroup ? getMemberProfile(chat, m.sender) : null;
   return (
     <div className={'row ' + (m.me ? 'me' : '') + ' msg-row-wrap'}>
       {onEdit && <MsgActions idx={idx} onEdit={onEdit} onInsertAfter={onInsertAfter} />}
-      {!m.me && <Avatar text={chat.avatar} img={chat.avatarImg} />}
+      {!m.me && <Avatar text={member?.avatar || chat.avatar} img={member?.avatarImg || chat.avatarImg} />}
       <div className="col">
         {!m.me && (isGroup || mobile) && (isGroup ? m.sender : null) && <span className="sender">{m.sender}</span>}
         <div className="line">
@@ -405,7 +417,7 @@ function StatusBar() {
   );
 }
 
-function Mobile({ theme, chats, setActive, chat, isGroup, showTime, input, setInput, send, page, setPage, onEdit, onInsertAfter }) {
+function Mobile({ theme, chats, setActive, chat, isGroup, groupMembers, senderName, setSenderName, setAsOther, pickMemberAvatar, addGroupMember, showTime, input, setInput, send, page, setPage, onEdit, onInsertAfter }) {
   const qq = theme === 'qq';
   const { myAvatar, pickImage } = useContext(Ctx);
   const total = unreadTotal(chats);
@@ -420,12 +432,18 @@ function Mobile({ theme, chats, setActive, chat, isGroup, showTime, input, setIn
         <>
           {qq ? (
             <div className="mhead qq-list-head">
-              <Avatar text={ME} img={myAvatar} className="big" />
+              <button className="mobile-avatar-button" title="修改我的头像" onClick={() => pickImage('avatar-me')}>
+                <Avatar text={ME} img={myAvatar} className="big" />
+              </button>
               <div><b>{ME}</b><small><i className="online" />在线 - WiFi</small></div>
               <Plus size={28} />
             </div>
           ) : (
-            <div className="mhead center"><b>微信{total ? `(${total})` : ''}</b>
+            <div className="mhead center">
+              <button className="mobile-avatar-button mobile-list-avatar" title="修改我的头像" onClick={() => pickImage('avatar-me')}>
+                <Avatar text={ME} img={myAvatar} />
+              </button>
+              <b>微信{total ? `(${total})` : ''}</b>
               <span className="r"><Search size={22} /><CirclePlus size={22} /></span></div>
           )}
           <div className="mlist">
@@ -433,7 +451,14 @@ function Mobile({ theme, chats, setActive, chat, isGroup, showTime, input, setIn
             {chats.map((c, i) => (
               <div key={i} className="mitem" onClick={() => { setActive(i); setPage('chat'); }}>
                 <div className="avwrap">
-                  <Avatar text={c.avatar} img={c.avatarImg} />
+                  <button className="mobile-avatar-button" title={c.group ? '修改群头像' : '修改联系人头像'} onClick={e => {
+                    e.stopPropagation();
+                    setActive(i);
+                    setPage('chat');
+                    pickImage('avatar-contact');
+                  }}>
+                    <Avatar text={c.avatar} img={c.avatarImg} />
+                  </button>
                   {c.unread > 0 && (qq || !c.muted) ? <em className="cnt">{c.unread > 99 ? '99+' : c.unread}</em> : null}
                   {!qq && c.unread > 0 && c.muted ? <em className="dot" /> : null}
                 </div>
@@ -449,12 +474,24 @@ function Mobile({ theme, chats, setActive, chat, isGroup, showTime, input, setIn
         <>
           <div className="mhead chat-head">
             <button onClick={() => setPage('list')} className="back"><ChevronLeft size={26} />{total > 0 && <em>{total}</em>}</button>
-            <b>{chat.name}{isGroup ? `(${chat.members || 6})` : ''}{qq && <Ear size={16} className="ear" />}</b>
+            <b>
+              <button className="mobile-avatar-button chat-avatar-button" title="修改会话头像" onClick={() => pickImage('avatar-contact')}>
+                <Avatar text={chat.avatar} img={chat.avatarImg} />
+              </button>
+              <span>{chat.name}{isGroup ? `(${chat.members || groupMembers.length || 1})` : ''}</span>{qq && <Ear size={16} className="ear" />}
+            </b>
             <span className="r">{qq ? <Menu size={24} /> : <MoreHorizontal size={24} />}</span>
           </div>
           <Messages chat={chat} isGroup={isGroup} showTime={showTime} mobile onEdit={onEdit} onInsertAfter={onInsertAfter} />
           {qq ? (
             <div className="qq-bottom">
+              {isGroup && <div className="mobile-member-picker">
+                {groupMembers.map(name => <span className="mobile-member-item" key={name}>
+                  <button className="mobile-member-avatar" title="修改成员头像" onClick={() => pickMemberAvatar(name)}><Avatar text={getMemberProfile(chat, name).avatar} img={getMemberProfile(chat, name).avatarImg} /></button>
+                  <button className={senderName === name ? 'active' : ''} onClick={() => { setSenderName(name); setAsOther(true); }}>{name}</button>
+                </span>)}
+                <button className="mobile-member-add" title="新增群成员" onClick={() => { const name = window.prompt('新增成员昵称'); if (name) addGroupMember(name); }}><Plus size={13} /></button>
+              </div>}
               <div className="chips">
                 {['作业', '文件', '相册', '精华消息'].map(t => <span key={t}>{t}</span>)}
               </div>
@@ -467,6 +504,13 @@ function Mobile({ theme, chats, setActive, chat, isGroup, showTime, input, setIn
             </div>
           ) : (
             <div className="wx-bottom">
+              {isGroup && <div className="mobile-member-picker">
+                {groupMembers.map(name => <span className="mobile-member-item" key={name}>
+                  <button className="mobile-member-avatar" title="修改成员头像" onClick={() => pickMemberAvatar(name)}><Avatar text={getMemberProfile(chat, name).avatar} img={getMemberProfile(chat, name).avatarImg} /></button>
+                  <button className={senderName === name ? 'active' : ''} onClick={() => { setSenderName(name); setAsOther(true); }}>{name}</button>
+                </span>)}
+                <button className="mobile-member-add" title="新增群成员" onClick={() => { const name = window.prompt('新增成员昵称'); if (name) addGroupMember(name); }}><Plus size={13} /></button>
+              </div>}
               <Mic size={28} />
               <input value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), send())} />
@@ -502,8 +546,10 @@ function App() {
   const [page, setPage] = useState('chat');
   const [myAvatar, setMyAvatar] = useState(null);
   const [crop, setCrop] = useState(null);
+  const [memberAvatarTarget, setMemberAvatarTarget] = useState(null);
   const [asOther, setAsOther] = useState(false);
   const [senderName, setSenderName] = useState('阿杰');
+  const [newMemberName, setNewMemberName] = useState('');
 
   /* hydrate from IndexedDB on first mount */
   useEffect(() => {
@@ -544,6 +590,7 @@ function App() {
   const kindRef = useRef(null);
   const chat = chats[active];
   const isGroup = !!chat.group;
+  const groupMembers = getGroupMembers(chat);
 
   const patchChat = p => setChats(cs => cs.map((c, i) => i === active ? { ...c, ...p } : c));
   const now = () => new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
@@ -608,6 +655,10 @@ function App() {
     setCrop(null);
     if (kind === 'avatar-me') setMyAvatar(url);
     else if (kind === 'avatar-contact') patchChat({ avatarImg: url });
+    else if (kind === 'avatar-member' && memberAvatarTarget) {
+      patchChat({ memberProfiles: { ...(chat.memberProfiles || {}), [memberAvatarTarget]: { ...getMemberProfile(chat, memberAvatarTarget), avatarImg: url } } });
+      setMemberAvatarTarget(null);
+    }
     else {
       const me = kind === 'img-me';
       const msg = { type: 'image', src: url, me, time: now(),
@@ -615,9 +666,18 @@ function App() {
       addMsg(msg, '[图片]');
     }
   };
+  const pickMemberAvatar = name => { setMemberAvatarTarget(name); pickImage('avatar-member'); };
   const add = () => {
     setChats(cs => [{ name: '新会话', avatar: '新', preview: '开始聊天吧', time: '刚刚', messages: [] }, ...cs]);
     setActive(0);
+  };
+  const addGroupMember = (providedName) => {
+    const name = (providedName || newMemberName).trim();
+    if (!name || groupMembers.includes(name)) return;
+    const memberNames = [...groupMembers, name];
+    patchChat({ memberNames, members: Math.max(chat.members || 0, memberNames.length) });
+    setSenderName(name);
+    setNewMemberName('');
   };
 
   /* ── Export ──
@@ -665,7 +725,7 @@ function App() {
 
   // the open chat counts as read; others count from their messages
   const chatsView = chats.map((c, i) => ({ ...c, unread: i === active ? 0 : countUnread(c) }));
-  const common = { theme, chats: chatsView, active, setActive, chat, isGroup, showTime, input, setInput, send, onEdit, onInsertAfter };
+  const common = { theme, chats: chatsView, active, setActive, chat, isGroup, groupMembers, senderName, setSenderName, setAsOther, pickMemberAvatar, addGroupMember, showTime, input, setInput, send, onEdit, onInsertAfter };
 
   return (
     <Ctx.Provider value={{ myAvatar, pickImage, insertAt, setInsertAt }}>
@@ -749,9 +809,39 @@ function App() {
               {chat.avatarImg && <button className="mini-btn" onClick={() => patchChat({ avatarImg: null })}>清除</button>}
             </div>
             <label className="check">
-              <input type="checkbox" checked={isGroup} onChange={e => patchChat({ group: e.target.checked })} />
+              <input type="checkbox" checked={isGroup} onChange={e => patchChat({
+                group: e.target.checked,
+                ...(e.target.checked ? { members: chat.members || groupMembers.length || 2, memberNames: groupMembers } : {})
+              })} />
               <Users size={12} /> 群聊（显示发言人）
             </label>
+            {isGroup && (
+              <>
+                <label style={{ marginTop: 10 }}>群人数</label>
+                <input type="number" min={groupMembers.length || 1} value={chat.members || groupMembers.length || 1}
+                  onChange={e => patchChat({ members: Math.max(groupMembers.length || 1, Number(e.target.value) || 1) })} />
+                <label style={{ marginTop: 10 }}>选择群成员</label>
+                <div className="member-picker">
+                  {groupMembers.map(name => (
+                    <button key={name} className={senderName === name ? 'active' : ''} onClick={() => { setSenderName(name); setAsOther(true); }}>
+                      {name}
+                    </button>
+                  ))}
+                </div>
+                <div className="member-avatar-editor">
+                  <Avatar text={getMemberProfile(chat, senderName).avatar} img={getMemberProfile(chat, senderName).avatarImg} className="ctl" />
+                  <input type="text" maxLength="2" value={getMemberProfile(chat, senderName).avatar}
+                    onChange={e => patchChat({ memberProfiles: { ...(chat.memberProfiles || {}), [senderName]: { ...getMemberProfile(chat, senderName), avatar: e.target.value } } })} />
+                  <button className="mini-btn" onClick={() => pickMemberAvatar(senderName)}>修改头像</button>
+                </div>
+                <div className="member-add">
+                  <input type="text" maxLength="12" placeholder="新增成员昵称" value={newMemberName}
+                    onChange={e => setNewMemberName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addGroupMember()} />
+                  <button className="mini-btn" onClick={addGroupMember} disabled={!newMemberName.trim()}><Plus size={13} /> 添加</button>
+                </div>
+              </>
+            )}
             <label className="check">
               <input type="checkbox" checked={!!chat.muted} onChange={e => patchChat({ muted: e.target.checked })} />
               消息免打扰
@@ -764,10 +854,8 @@ function App() {
               <button className={!asOther ? 'active' : ''} onClick={() => setAsOther(false)}>我</button>
               <button className={asOther ? 'active' : ''} onClick={() => setAsOther(true)}>对方</button>
             </div>
-            {asOther && isGroup && (
-              <input type="text" style={{ marginTop: 8 }} placeholder="发言人昵称" value={senderName}
-                onChange={e => setSenderName(e.target.value)} />
-            )}
+            {asOther && isGroup && <input type="text" style={{ marginTop: 8 }} placeholder="发言人昵称" value={senderName}
+              onChange={e => setSenderName(e.target.value)} />}
           </div>
 
           <div className="panel">

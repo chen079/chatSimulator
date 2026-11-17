@@ -301,10 +301,16 @@ body { margin: 0; background: var(--c1); color: var(--c9);
 .mhead.center { justify-content: center; position: relative }
 .mhead.center b { font-size: 17px; font-weight: 600 }
 .mhead.center .r { position: absolute; right: 16px; display: flex; gap: 18px; color: #333 }
+.mobile-list-avatar { position: absolute; left: 16px }
+.mobile-list-avatar .av { width: 30px; height: 30px; border-radius: 6px; font-size: 11px }
 .mhead.qq-list-head { gap: 12px }
 .mhead.qq-list-head b { font-size: 17px; font-weight: 600 }
 .mhead.qq-list-head small { font-size: 12px; color: #999; display: block; margin-top: 2px }
 .mhead.qq-list-head > svg:last-child { margin-left: auto; color: #555 }
+.mobile-avatar-button { border: 0; background: none; padding: 0; cursor: pointer; display: grid; place-items: center }
+.mobile-avatar-button:hover { opacity: .8 }
+.chat-avatar-button { margin-right: 6px }
+.chat-avatar-button .av { width: 28px; height: 28px; font-size: 11px }
 .mhead.chat-head .back { border: 0; background: none; display: flex; align-items: center;
   cursor: pointer; color: #333; position: relative; gap: 2px }
 .mhead.chat-head .back em { position: absolute; top: -5px; right: -10px; background: #fa5151;
@@ -362,12 +368,22 @@ body { margin: 0; background: var(--c1); color: var(--c9);
 
 /* WeChat bottom composer */
 .wx-bottom { display: flex; align-items: center; gap: 10px; padding: 8px 14px 12px;
-  background: #f7f7f7; border-top: 1px solid #e0e0e0; flex: none; color: #555 }
+  background: #f7f7f7; border-top: 1px solid #e0e0e0; flex: none; color: #555; flex-wrap: wrap }
 .wx-bottom input { flex: 1; border: 1px solid #ddd; border-radius: 6px;
   padding: 9px 12px; font: 15px inherit; background: #fff; outline: none }
 
 /* QQ bottom composer */
 .qq-bottom { background: #f0f2f8; border-top: 1px solid #dde2f0; flex: none }
+.mobile-member-picker { display: flex; gap: 6px; width: 100%; overflow-x: auto; padding: 7px 12px 2px; flex: none }
+.mobile-member-picker::-webkit-scrollbar { display: none }
+.mobile-member-picker button { border: 1px solid #d2d2d2; background: #fff; color: #666; border-radius: 12px;
+  padding: 3px 9px; font: 11px inherit; white-space: nowrap; cursor: pointer }
+.mobile-member-picker button.active { border-color: #07c160; background: #07c160; color: #fff }
+.mob.t-qq .mobile-member-picker button.active { border-color: #1677ff; background: #1677ff }
+.mobile-member-item { display: inline-flex; gap: 3px; flex: none; align-items: center }
+.mobile-member-item .mobile-member-avatar { border: 0; background: none; padding: 0; cursor: pointer }
+.mobile-member-item .mobile-member-avatar .av { width: 22px; height: 22px; border-radius: 50%; font-size: 9px }
+.mobile-member-add { display: grid; place-items: center; width: 24px; min-width: 24px; height: 24px; padding: 0 !important; border-radius: 50% !important; color: #777 !important }
 .chips { display: flex; gap: 8px; padding: 8px 12px 4px; overflow-x: auto }
 .chips::-webkit-scrollbar { display: none }
 .chips span { border: 1px solid #c8d0e8; border-radius: 16px; padding: 5px 12px;
@@ -414,6 +430,18 @@ body { margin: 0; background: var(--c1); color: var(--c9);
 .mini-btn { border: 1px solid var(--c2); background: #fff; border-radius: var(--r1);
   padding: 5px 10px; font: 11px inherit; cursor: pointer; white-space: nowrap }
 .mini-btn:hover { border-color: #999; background: #f8f8f8 }
+.mini-btn:disabled { opacity: .45; cursor: default }
+.member-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px }
+.member-picker button { border: 1px solid var(--c2); background: #fff; color: var(--c4); border-radius: var(--r1);
+  padding: 5px 9px; font: 11px inherit; cursor: pointer }
+.member-picker button:hover { border-color: var(--acc); color: var(--acc) }
+.member-picker button.active { border-color: var(--acc); background: var(--acc); color: #fff }
+.member-add { display: flex; gap: 6px; align-items: center; margin-top: 8px }
+.member-add input { min-width: 0; flex: 1 }
+.member-add .mini-btn { display: inline-flex; align-items: center; gap: 3px; padding-left: 8px; padding-right: 8px }
+.member-avatar-editor { display: flex; align-items: center; gap: 7px; margin-top: 8px }
+.member-avatar-editor .av { width: 30px; height: 30px; border-radius: 6px; font-size: 12px }
+.member-avatar-editor input { width: 42px }
 
 /* ── Crop / upload modal ── */
 .modal-back { position: fixed; inset: 0; background: #00000066; z-index: 1000;
